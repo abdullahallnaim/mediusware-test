@@ -1,0 +1,191 @@
+{% extends 'backend/base.html' %} {% block title %} Product List {% endblock %}
+{% block content %}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+  <h1 class="h3 mb-0 text-gray-800">Products</h1>
+</div>
+
+<h1>Product List</h1>
+<!-- {% for product in products %}
+<div>
+  <h2>{{ product.title }}</h2>
+  <p>{{ product.description }}</p>
+  <h3>Variants:</h3>
+  {% for variant_info in product.variant_info_list %}
+  <div>
+    <p>Variant Title: {{ variant_info.variant_title }}</p>
+    <p>Description: {{ variant_info.description }}</p>
+    <p>Active: {{ variant_info.active }}</p>
+    <p>Prices: {{ variant_info.prices }}</p>
+    <p>In Stock: {{ variant_info.in_stock }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %} -->
+
+<div class="card">
+  <form action="" method="get" class="card-header">
+    <div class="d-flex flex-wrap justify-content-between">
+      <div class="col-md-2">
+        <input
+          type="text"
+          name="title"
+          placeholder="Product Title"
+          class="form-control"
+        />
+      </div>
+      <div class="col-md-2">
+        <select name="variant" id="variant" class="form-control">
+          <option value="" selected disabled>-- Select Variant --</option>
+          {% for type, variants in grouped_variants.items %}
+              <optgroup label="--{{ type }}--">
+                  {% for variant in variants %}
+                      <option value="{{ variant }}">{{ variant }}</option>
+                  {% endfor %}
+              </optgroup>
+          {% endfor %}
+      </select>
+      </div>
+
+      <div class="col-md-3">
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Price Range</span>
+          </div>
+          <input
+            type="text"
+            name="price_from"
+            aria-label="First name"
+            placeholder="From"
+            class="form-control"
+          />
+          <input
+            type="text"
+            name="price_to"
+            aria-label="Last name"
+            placeholder="To"
+            class="form-control"
+          />
+        </div>
+      </div>
+      <div class="col-md-2">
+        <input
+          type="date"
+          name="date"
+          placeholder="Date"
+          class="form-control"
+        />
+      </div>
+      <div class="col-md-1">
+        <button type="submit" class="btn btn-primary float-right">
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div class="card-body">
+    <div class="table-response">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Variant</th>
+            <th width="150px">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for product in paged_products %}
+          <tr>
+            <td>{{ product.id }}</td>
+            <td>
+              {{ product.title }} <br />
+              Created at: {{ product.created_at|timesince }}
+            </td>
+            <td>{{ product.description }}</td>
+            <td>
+              <dl
+                class="row mb-0"
+                style="height: 80px; overflow: hidden"
+                id="variant_{{ product.id }}"
+              >
+              {% for variant_info in product.variant_info_list %}
+              
+              {% for data in variant_info.variant_prices %}
+              <div class="d-flex flex-wrap justify-content-between">
+                    <p>{{data.product_variant_one.variant_title}}/{{data.product_variant_two.variant_title}}/{{data.product_variant_three.variant_title}}</p>
+                    
+                    <p>{{data.price}}</p>
+                    <br>
+                    
+                    <p>InStock : {{data.stock}}</p>
+                </div>
+                {% endfor %}
+                {% endfor %}
+              </dl>
+              <button onclick="toggleVisibility({{ product.id }})" class="btn btn-sm btn-link">Show more</button>
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm">
+                <a href="" class="btn btn-success">Edit</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">No products available.</td>
+          </tr>
+          {% endfor %}
+
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="row justify-content-between">
+        <div class="col-md-6">
+            <p>Showing {{ paged_products.start_index }} to {{ paged_products.end_index }} out of {{ paginator.count }}</p>
+        </div>
+        <div class="col-md-6">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-end">
+                    <li class="page-item {% if not paged_products.has_previous %}disabled{% endif %}">
+                        <a class="page-link" href="{% if paged_products.has_previous %}?page={{ paged_products.previous_page_number }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% for i in paged_products.paginator.page_range %}
+                        <li class="page-item {% if paged_products.number == i %}active{% endif %}">
+                            <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item {% if not paged_products.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{% if paged_products.has_next %}?page={{ paged_products.next_page_number }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+  
+</div>
+    <!-- Pagination -->
+    
+{% endblock %}
+
+{% block js %}
+<script>
+    function toggleVisibility(productId) {
+      var variantId = "#variant_" + productId;
+      $(variantId).toggleClass('h-auto');
+    }
+  </script>
+{% endblock %}
